@@ -103,6 +103,7 @@ class EditViewController: UIViewController, UITextFieldDelegate {
         cell?.title.text = taskTitle.text
         cell?.notes = taskNotes.text
         //change cell colour depending on deadline time
+        cell?.taskSwitch.setOn(false, animated: false)
         if(dateSwitch.isOn){
             cell?.dateOriginal = taskDate.date
             cell?.date.text = formatter.string(from: taskDate.date)
@@ -117,7 +118,7 @@ class EditViewController: UIViewController, UITextFieldDelegate {
             cell?.dateOriginal = nil
             cell?.date.text = ""
         }
-        _ = navigationController?.popViewController(animated: true)
+        checkIfHasSomethink()
     }
     
     //press cancel button

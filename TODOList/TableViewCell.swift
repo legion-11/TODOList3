@@ -11,12 +11,14 @@ import UIKit
 //custome cell
 class TableViewCell: UITableViewCell {
     
+    
     //notes for todo item
     var notes = ""
     //deadline
     var dateOriginal: Date?
     @IBOutlet weak var title: UILabel!
     @IBOutlet weak var date: UILabel!
+    @IBOutlet weak var taskSwitch: UISwitch!
     
     //finish task grey out labels
     @IBAction func swichPressed(_ sender: UISwitch) {

@@ -65,6 +65,7 @@
                                 <connections>
                                     <outlet property="Title" destination="r8l-au-Jvo" id="enh-ls-KC1"/>
                                     <outlet property="date" destination="kFp-mg-yU1" id="Vmz-oW-bLu"/>
+                                    <outlet property="taskSwitch" destination="ufp-rp-sbS" id="I93-fi-Znm"/>
                                     <outlet property="title" destination="r8l-au-Jvo" id="eBA-Ii-hp9"/>
                                 </connections>
                             </tableViewCell>
