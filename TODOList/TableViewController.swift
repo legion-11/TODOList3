@@ -10,14 +10,18 @@ import UIKit
 
 class TableViewController: UITableViewController {
     
-    //number of items of TableView
+    //number of items of TableView = titles.count
+    // arrays of cells data
     var titles: [String] = []
     var notes: [String] = []
     var dates: [Date] = []
     var hasDate: [Bool] = []
     var isDone: [Bool] = []
+    
+    //dir where plist will be saved
     let directories = NSSearchPathForDirectoriesInDomains(.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
     
+    //get path to plist
     func dataFileURL() -> NSURL {
         let urls = FileManager.default.urls(for:
             .documentDirectory, in: .userDomainMask)
@@ -31,6 +35,7 @@ class TableViewController: UITableViewController {
         return url!
     }
     
+    // add 1 new element in every cell data array
     func addNewItem() {
         titles.append("")
         notes.append("")
@@ -38,6 +43,8 @@ class TableViewController: UITableViewController {
         hasDate.append(false)
         isDone.append(false)
     }
+    
+    //del 1 element in every cell data array
     func deleteItem(index: Int){
         titles.remove(at: index)
         notes.remove(at: index)
@@ -55,6 +62,7 @@ class TableViewController: UITableViewController {
         super.viewDidLoad()
         formatter.dateFormat = "HH:mm EEEE, d MMMM y"
         
+        //load data from plist
         let fileURL = self.dataFileURL()
         if (FileManager.default.fileExists(atPath: fileURL.path!)) {
            print("file exists")
@@ -71,6 +79,7 @@ class TableViewController: UITableViewController {
         }
     }
     
+    //save data to plist
     @objc func saveToPersistentList() {
         let tmpdata = ["titles": titles,
                        "notes": notes,
@@ -87,7 +96,7 @@ class TableViewController: UITableViewController {
         return 1
     }
     
-    
+    //number of rows in tableView
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return titles.count
     }
@@ -123,6 +132,7 @@ class TableViewController: UITableViewController {
             deleteItem(index: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
             tableView.endUpdates()
+            saveToPersistentList()
         }
     }
     
@@ -149,7 +159,7 @@ class TableViewController: UITableViewController {
         tableView.insertRows(at: [IndexPath(row: titles.count-1, section: 0)], with: .automatic)
         tableView.endUpdates()
         
-        // open edit screen after added cell
+        // open edit screen after adding cell
         cell = tableView.cellForRow(at: IndexPath(row: titles.count-1, section: 0)) as? TableViewCell
         cellIndex = IndexPath(row: titles.count-1, section: 0)
         performSegue(withIdentifier: "showDetails", sender: nil)

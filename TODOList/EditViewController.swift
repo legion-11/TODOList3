@@ -99,7 +99,7 @@ class EditViewController: UIViewController, UITextFieldDelegate {
         if(!dateSwitch.isOn){dateSwitch.setOn(true, animated: true)}
     }
     
-    
+    // porvide dialog to save data
     @IBAction func saveDialogTrigger(_ sender: UIButton) {
         let alert = UIAlertController(title: "Save changes?", message: nil, preferredStyle: .alert)
 
@@ -143,6 +143,7 @@ class EditViewController: UIViewController, UITextFieldDelegate {
         checkIfHasSomething()
     }
     
+    //provide dialog to cancel changes
     @IBAction func cancelDialogTrigger(_ sender: UIButton) {
         let alert = UIAlertController(title: "Cancel changes?", message: nil, preferredStyle: .alert)
 
@@ -161,6 +162,7 @@ class EditViewController: UIViewController, UITextFieldDelegate {
         checkIfHasSomething()
     }
     
+    //provide dialog to delete cell
     @IBAction func deleteDialogTrigger(_ sender: UIButton) {
         let alert = UIAlertController(title: "Delete item?", message: nil, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {action in self.del()}))
