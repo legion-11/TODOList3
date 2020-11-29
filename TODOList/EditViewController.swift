@@ -5,6 +5,7 @@
 //  Created by Dmytro Andriichuk $301132978 on 12.11.2020.
 //  Copyright © 2020 legion-11. All rights reserved.
 //
+//  Assignment #5
 
 import UIKit
 
@@ -184,6 +185,7 @@ class EditViewController: UIViewController, UITextFieldDelegate {
         tableViewController?.deleteItem(index: indexPath.row)
         tableViewController?.tableView.endUpdates()
         tableViewController?.saveToPersistentList()
+        
         _ = navigationController?.popViewController(animated: true)
     }
     
