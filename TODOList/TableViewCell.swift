@@ -2,7 +2,7 @@
 //  TableViewCell.swift
 //  TODOList
 //
-//  Created by legion-11 on 12.11.2020.
+//  Created by Dmytro Andriichuk $301132978 on 12.11.2020.
 //  Copyright © 2020 legion-11. All rights reserved.
 //
 
@@ -11,11 +11,10 @@ import UIKit
 //custome cell
 class TableViewCell: UITableViewCell {
     
-    
-    //notes for todo item
-    var notes = ""
     //deadline
-    var dateOriginal: Date?
+    var tableView: TableViewController?
+    var indexPath: IndexPath?
+    
     @IBOutlet weak var title: UILabel!
     @IBOutlet weak var date: UILabel!
     @IBOutlet weak var taskSwitch: UISwitch!
@@ -23,12 +22,13 @@ class TableViewCell: UITableViewCell {
     //finish task grey out labels
     @IBAction func swichPressed(_ sender: UISwitch) {
         if sender.isOn{
-            //
+            tableView?.isDone[indexPath!.row] = true
             title.textColor = UIColor.gray
             date.textColor = UIColor.gray
         }else{
+            tableView?.isDone[indexPath!.row] = false
             // if deadline was not set or deadline in future
-            if ((date.text != "" && dateOriginal! > Date()) || date.text == ""){
+            if (tableView?.hasDate[indexPath!.row] == true && (tableView?.dates[indexPath!.row])! > Date() ) {
                 title.textColor = UIColor.label
                 date.textColor = UIColor.label
             // deadline has come
@@ -37,5 +37,7 @@ class TableViewCell: UITableViewCell {
                 date.textColor = UIColor.red
             }
         }
+        tableView?.saveToPersistentList()
+        
     }
 }

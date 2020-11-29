@@ -2,7 +2,7 @@
 //  EditViewController.swift
 //  TODOList
 //
-//  Created by legion-11 on 12.11.2020.
+//  Created by Dmytro Andriichuk $301132978 on 12.11.2020.
 //  Copyright © 2020 legion-11. All rights reserved.
 //
 
@@ -68,12 +68,13 @@ class EditViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         //show data from cell
-        taskTitle.text = cell?.title.text
-        taskNotes.text = cell?.notes
-        if (cell?.dateOriginal) != nil{
+        taskTitle.text = tableViewController?.titles[indexPath.row]
+        taskNotes.text = tableViewController?.notes[indexPath.row]
+        if (tableViewController?.hasDate[indexPath.row] == true){
             dateSwitch.setOn(true, animated: true)
-            taskDate.setDate(cell?.dateOriginal ?? Date(), animated: false)
+            taskDate.setDate((tableViewController?.dates[indexPath.row])!, animated: false)
         }
+        
         formatter.dateFormat = "HH:mm EEEE, d MMMM y"
         
         //hide back button to create custome one, that can delete cell if data was not provided
@@ -85,11 +86,11 @@ class EditViewController: UIViewController, UITextFieldDelegate {
     // update data from cell if screen was only hidden
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        taskTitle.text = cell?.title.text
-        taskNotes.text = cell?.notes
-        if (cell?.dateOriginal) != nil{
+        taskTitle.text = tableViewController?.titles[indexPath.row]
+        taskNotes.text = tableViewController?.notes[indexPath.row]
+        if (tableViewController?.hasDate[indexPath.row]) != false{
             dateSwitch.setOn(true, animated: true)
-            taskDate.setDate(cell?.dateOriginal ?? Date(), animated: false)
+            taskDate.setDate((tableViewController?.dates[indexPath.row])!, animated: false)
         }
     }
     
@@ -98,15 +99,31 @@ class EditViewController: UIViewController, UITextFieldDelegate {
         if(!dateSwitch.isOn){dateSwitch.setOn(true, animated: true)}
     }
     
+    
+    @IBAction func saveDialogTrigger(_ sender: UIButton) {
+        let alert = UIAlertController(title: "Save changes?", message: nil, preferredStyle: .alert)
+
+        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {action in self.saveData()}))
+        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+
+        self.present(alert, animated: true)
+    }
+    
     //save input to cell and go back to previous screen
-    @IBAction func saveData(_ sender: UIButton) {
+    func saveData() {
         cell?.title.text = taskTitle.text
-        cell?.notes = taskNotes.text
+        tableViewController?.titles[indexPath.row] = taskTitle.text ?? ""
+        tableViewController?.notes[indexPath.row] = taskNotes.text
+        
         //change cell colour depending on deadline time
         cell?.taskSwitch.setOn(false, animated: false)
+        tableViewController?.isDone[indexPath.row] = false
+        
+        tableViewController?.dates[indexPath.row] = taskDate.date
         if(dateSwitch.isOn){
-            cell?.dateOriginal = taskDate.date
+            tableViewController?.hasDate[indexPath.row] = true
             cell?.date.text = formatter.string(from: taskDate.date)
+            
             if taskDate.date < Date(){
                 cell?.title.textColor = UIColor.red
                 cell?.date.textColor = UIColor.red
@@ -114,37 +131,57 @@ class EditViewController: UIViewController, UITextFieldDelegate {
                 cell?.title.textColor = UIColor.label
                 cell?.date.textColor = UIColor.label
             }
+            
         }else{
-            cell?.dateOriginal = nil
+            tableViewController?.hasDate[indexPath.row] = false
             cell?.date.text = ""
+
+            cell?.title.textColor = UIColor.label
+            cell?.date.textColor = UIColor.label
+            
         }
-        checkIfHasSomethink()
+        checkIfHasSomething()
+    }
+    
+    @IBAction func cancelDialogTrigger(_ sender: UIButton) {
+        let alert = UIAlertController(title: "Cancel changes?", message: nil, preferredStyle: .alert)
+
+        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {action in self.cancel()}))
+        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+
+        self.present(alert, animated: true)
     }
     
     //press cancel button
-    @IBAction func cancel(_ sender: UIButton) {
-        checkIfHasSomethink()
+    func cancel() {
+        checkIfHasSomething()
     }
     //press back button
     @objc func back(sender: UIBarButtonItem) {
-        checkIfHasSomethink()
+        checkIfHasSomething()
     }
+    
+    @IBAction func deleteDialogTrigger(_ sender: UIButton) {
+        let alert = UIAlertController(title: "Delete item?", message: nil, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {action in self.del()}))
+        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+        self.present(alert, animated: true)
+    }
+    
     //press delete button
-    @IBAction func del(_ sender: UIButton) {
+     func del() {
         //set cell data to default, so next time you create cell it has default data
         cell?.date.text = ""
         cell?.title.text = ""
         cell?.date.textColor = UIColor.label
         cell?.title.textColor = UIColor.label
-        cell?.notes = ""
-        cell?.dateOriginal = nil
         
         //delete cell
         tableViewController?.tableView.beginUpdates()
-        tableViewController?.tableView.deleteRows(at: [indexPath], with: .fade)
-        tableViewController?.rows -= 1
+        tableViewController?.tableView.deleteRows(at: [indexPath], with: .none)
+        tableViewController?.deleteItem(index: indexPath.row)
         tableViewController?.tableView.endUpdates()
-        
+        tableViewController?.saveToPersistentList()
         _ = navigationController?.popViewController(animated: true)
     }
     
@@ -154,11 +191,17 @@ class EditViewController: UIViewController, UITextFieldDelegate {
     }
     
     //delete cell if no data was provided
-    func checkIfHasSomethink(){
-        if (cell?.title.text == "" && cell?.notes == "" && cell?.date.text == ""){
-            tableViewController?.rows -= 1
-            tableViewController?.tableView.deleteRows(at: [indexPath], with: .fade)
+    func checkIfHasSomething(){
+        if (tableViewController?.titles[indexPath.row] == "" &&
+            tableViewController?.notes[indexPath.row] == "" &&
+            tableViewController?.hasDate[indexPath.row] == false){
+            
+             tableViewController?.tableView.beginUpdates()
+             tableViewController?.deleteItem(index: indexPath.row)
+             tableViewController?.tableView.deleteRows(at: [indexPath], with: .none)
+             tableViewController?.tableView.endUpdates()
         }
+        tableViewController?.saveToPersistentList()
         _ = navigationController?.popViewController(animated: true)
     }
     
@@ -166,4 +209,5 @@ class EditViewController: UIViewController, UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         view.endEditing(true)
     }
+    
 }

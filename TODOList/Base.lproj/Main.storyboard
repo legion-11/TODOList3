@@ -24,16 +24,13 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r8l-au-Jvo">
-                                            <rect key="frame" x="20" y="7" width="276" height="27"/>
-                                            <constraints>
-                                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="276" id="c1j-ET-IqE"/>
-                                            </constraints>
+                                            <rect key="frame" x="20" y="7" width="317" height="27"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="24"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kFp-mg-yU1">
-                                            <rect key="frame" x="20" y="30" width="276" height="20"/>
+                                            <rect key="frame" x="20" y="30" width="317" height="20"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -52,14 +49,15 @@
                                     <constraints>
                                         <constraint firstAttribute="bottomMargin" secondItem="r8l-au-Jvo" secondAttribute="bottom" constant="5" id="19f-NS-Sjv"/>
                                         <constraint firstItem="ufp-rp-sbS" firstAttribute="top" secondItem="Fbh-dk-Uu1" secondAttribute="topMargin" constant="-1" id="8iT-fJ-MGg"/>
+                                        <constraint firstItem="ufp-rp-sbS" firstAttribute="leading" secondItem="r8l-au-Jvo" secondAttribute="trailing" constant="8" id="CmT-5A-875"/>
                                         <constraint firstItem="kFp-mg-yU1" firstAttribute="top" secondItem="Fbh-dk-Uu1" secondAttribute="topMargin" constant="19" id="UMh-2K-Ozy"/>
                                         <constraint firstAttribute="bottomMargin" secondItem="kFp-mg-yU1" secondAttribute="bottom" constant="-11" id="WPJ-0y-smw"/>
                                         <constraint firstItem="ufp-rp-sbS" firstAttribute="centerY" secondItem="Fbh-dk-Uu1" secondAttribute="centerY" id="YDR-RQ-f1N"/>
                                         <constraint firstItem="r8l-au-Jvo" firstAttribute="leading" secondItem="Fbh-dk-Uu1" secondAttribute="leadingMargin" id="cBF-Sb-vsf"/>
+                                        <constraint firstItem="ufp-rp-sbS" firstAttribute="leading" secondItem="kFp-mg-yU1" secondAttribute="trailing" constant="8" id="dbq-14-aR6"/>
                                         <constraint firstItem="r8l-au-Jvo" firstAttribute="top" secondItem="Fbh-dk-Uu1" secondAttribute="topMargin" constant="-4" id="gCj-nO-DcS"/>
                                         <constraint firstItem="r8l-au-Jvo" firstAttribute="leading" secondItem="kFp-mg-yU1" secondAttribute="leading" id="ogT-Jg-bpQ"/>
                                         <constraint firstItem="ufp-rp-sbS" firstAttribute="trailing" secondItem="Fbh-dk-Uu1" secondAttribute="trailingMargin" id="sgT-CL-eBE"/>
-                                        <constraint firstItem="r8l-au-Jvo" firstAttribute="trailing" secondItem="kFp-mg-yU1" secondAttribute="trailing" id="wuU-1E-CjW"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
@@ -115,7 +113,7 @@
                                 </connections>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Notes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fjv-zp-fod">
-                                <rect key="frame" x="33" y="109" width="57" height="27"/>
+                                <rect key="frame" x="32" y="109" width="57" height="27"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="22"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -154,7 +152,7 @@
                                     </mask>
                                 </variation>
                                 <connections>
-                                    <action selector="del:" destination="vbJ-nu-oCx" eventType="touchUpInside" id="kR7-Ws-atd"/>
+                                    <action selector="deleteDialogTrigger:" destination="vbJ-nu-oCx" eventType="touchUpInside" id="yaP-xN-LSJ"/>
                                 </connections>
                             </button>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="H3O-Rc-Zp4">
@@ -213,7 +211,7 @@
                                     <constraint firstAttribute="width" constant="80" id="58S-vk-Et8"/>
                                 </constraints>
                                 <color key="tintColor" systemColor="systemGreenColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" image="xmark" catalog="system">
+                                <state key="normal" image="checkmark" catalog="system">
                                     <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="medium"/>
                                 </state>
                                 <userDefinedRuntimeAttributes>
@@ -228,7 +226,7 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
-                                    <action selector="saveData:" destination="vbJ-nu-oCx" eventType="touchUpInside" id="dOI-93-N0E"/>
+                                    <action selector="saveDialogTrigger:" destination="vbJ-nu-oCx" eventType="touchUpInside" id="gf6-nM-h07"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Notes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZLQ-lq-GAf">
@@ -266,7 +264,7 @@
                                     </mask>
                                 </variation>
                                 <connections>
-                                    <action selector="cancel:" destination="vbJ-nu-oCx" eventType="touchUpInside" id="7Dn-Yl-mt6"/>
+                                    <action selector="cancelDialogTrigger:" destination="vbJ-nu-oCx" eventType="touchUpInside" id="FKY-8U-hpy"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -445,6 +443,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="checkmark" catalog="system" width="128" height="114"/>
         <image name="trash" catalog="system" width="121" height="128"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
     </resources>
