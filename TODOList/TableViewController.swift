@@ -9,7 +9,7 @@
 
 import UIKit
 
-class TableViewController: UITableViewController {
+class TableViewController: UITableViewController, UIGestureRecognizerDelegate {
     
     //number of items of TableView = titles.count
     // arrays of cells data
@@ -21,7 +21,6 @@ class TableViewController: UITableViewController {
     
     //dir where plist will be saved
     let directories = NSSearchPathForDirectoriesInDomains(.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
-    
     //get path to plist
     func dataFileURL() -> NSURL {
         let urls = FileManager.default.urls(for:
@@ -54,29 +53,38 @@ class TableViewController: UITableViewController {
         isDone.remove(at: index)
     }
     
-    //index of selected cell for segue
-    var cellIndex = IndexPath(row: 0, section: 0)
-    var cell: TableViewCell?
     let formatter = DateFormatter()
+    
+    // gesture to sequence delete swipe gesture in trailing swipes function
+    var pressGesture: UILongPressGestureRecognizer? = nil
+    
+    //instance to navigate push to
+    var navigationPoint: EditViewController? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+        navigationPoint = self.storyboard?.instantiateViewController(withIdentifier: "EditViewController")as? EditViewController
+        pressGesture = UILongPressGestureRecognizer(target: self, action: nil)
+        pressGesture!.delegate = self
+        tableView.addGestureRecognizer(pressGesture!)
+        
         formatter.dateFormat = "HH:mm EEEE, d MMMM y"
         
         //load data from plist
         let fileURL = self.dataFileURL()
         if (FileManager.default.fileExists(atPath: fileURL.path!)) {
-           print("file exists")
-           let loadedDictionary = NSDictionary(contentsOf: fileURL as URL)
-           print("load")
-           if let dictionary = loadedDictionary {
-              print(dictionary)
-              titles = dictionary["titles"] as! [String]
-              notes = dictionary["notes"] as! [String]
-              dates = dictionary["dates"] as! [Date]
-              hasDate = dictionary["hasDate"] as! [Bool]
-              isDone = dictionary["isDone"] as! [Bool]
-           }
+            let loadedDictionary = NSDictionary(contentsOf: fileURL as URL)
+
+            if let dictionary = loadedDictionary {
+                print("load")
+                titles = dictionary["titles"] as! [String]
+                notes = dictionary["notes"] as! [String]
+                dates = dictionary["dates"] as! [Date]
+                hasDate = dictionary["hasDate"] as! [Bool]
+                isDone = dictionary["isDone"] as! [Bool]
+            }
         }
     }
     
@@ -106,14 +114,11 @@ class TableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "id", for: indexPath) as! TableViewCell
         
-        cell.tableView = self
-        cell.indexPath = indexPath
-        
         cell.title.text = titles[indexPath.row]
         if (hasDate[indexPath.row] == true) {cell.date.text = formatter.string(from: dates[indexPath.row])}
         else {cell.date.text = ""}
-        cell.taskSwitch.isOn = isDone[indexPath.row]
-        if cell.taskSwitch.isOn {
+        
+        if isDone[indexPath.row] {
             cell.title.textColor = UIColor.gray
             cell.date.textColor = UIColor.gray
         } else if (hasDate[indexPath.row] == true && dates[indexPath.row] < Date()) {
@@ -123,34 +128,8 @@ class TableViewController: UITableViewController {
             cell.title.textColor = UIColor.label
             cell.date.textColor = UIColor.label
         }
+        
         return cell
-    }
-    
-    // delete cell with swipe
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            tableView.beginUpdates()
-            deleteItem(index: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .fade)
-            tableView.endUpdates()
-            saveToPersistentList()
-        }
-    }
-    
-    // click on cell perform segue to edit screen
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        cell = tableView.cellForRow(at: indexPath) as? TableViewCell
-        cellIndex = indexPath
-        performSegue(withIdentifier: "showDetails", sender: nil)
-    }
-    
-    // before swaping screen send data to edit screen
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let viewControler = segue.destination as? EditViewController {
-            viewControler.cell = cell
-            viewControler.indexPath = cellIndex
-            viewControler.tableViewController = self
-        }
     }
     
     // add cell
@@ -161,8 +140,104 @@ class TableViewController: UITableViewController {
         tableView.endUpdates()
         
         // open edit screen after adding cell
-        cell = tableView.cellForRow(at: IndexPath(row: titles.count-1, section: 0)) as? TableViewCell
-        cellIndex = IndexPath(row: titles.count-1, section: 0)
-        performSegue(withIdentifier: "showDetails", sender: nil)
+        navigeteLeft(IndexPath(row: titles.count-1, section: 0))
+    }
+    
+    // add trailing swipe gestures
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration?
+    {
+        
+        //if user longpressed on item for 0.5 seconds than return delete swipe action
+        if (pressGesture?.state == UIGestureRecognizer.State.changed) {
+            let action = UIContextualAction(style: .normal, title: nil) { (_, _, completionHandler) in
+                self.del(indexPath, true)
+                print("delete")
+                completionHandler(true)
+                
+            }
+            action.image = UIImage(systemName: "trash")
+            action.backgroundColor = .systemRed
+            
+            return UISwipeActionsConfiguration(actions: [action])
+        //else return edit swipe action
+        } else {
+            let action = UIContextualAction(style: .normal, title: nil) { (_, _, completionHandler) in
+                self.complete(indexPath)
+                print("complete")
+                completionHandler(true)
+            }
+            action.image = isDone[indexPath.row] ? UIImage(systemName: "xmark") : UIImage(systemName: "checkmark")
+            action.backgroundColor = .systemYellow
+                
+            return UISwipeActionsConfiguration(actions: [action])
+        }
+    }
+    
+    // color of completed items
+    func complete(_ indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath) as! TableViewCell
+        if isDone[indexPath.row] {
+            isDone[indexPath.row] = false
+            if (hasDate[indexPath.row] == true && (dates[indexPath.row]) < Date() ) {
+                // deadline was missed
+                cell.title.textColor = UIColor.red
+                cell.date.textColor = UIColor.red
+            }else{
+                // if deadline was not set or deadline in future
+                cell.title.textColor = UIColor.label
+                cell.date.textColor = UIColor.label
+            }
+        }else{
+            isDone[indexPath.row] = true
+            cell.title.textColor = UIColor.gray
+            cell.date.textColor = UIColor.gray
+        }
+        self.saveToPersistentList()
+    }
+    
+    // delete cell and save data
+    func del(_ indexPath: IndexPath,_ withAnimation: Bool){
+        tableView.beginUpdates()
+        deleteItem(index: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: withAnimation ? .fade : .none)
+        tableView.endUpdates()
+        saveToPersistentList()
+    }
+    
+    // leading swipe actions
+    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+            -> UISwipeActionsConfiguration? {
+                
+        let action = UIContextualAction(style: .normal, title: nil) { (action, view, completionHandler) in
+            self.navigeteLeft(indexPath)
+            print("edit")
+            completionHandler(true)
+        }
+        action.image = UIImage(systemName: "pencil")
+        action.backgroundColor = .systemBlue
+            
+        return UISwipeActionsConfiguration(actions: [action])
+    }
+    
+    // allowing to recognize press and swipe at the same time
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+    shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer)
+     -> Bool {
+        return true
+    }
+    
+    // custome navigation animation from left to right
+    func navigeteLeft(_ indexPath: IndexPath){
+        navigationPoint?.indexPath = indexPath
+        navigationPoint?.tableViewController = self
+        
+        let transition:CATransition = CATransition()
+        transition.duration = 0.35
+        transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
+        transition.type = CATransitionType.push
+        transition.subtype = CATransitionSubtype.fromLeft
+        self.navigationController?.view.layer.add(transition, forKey: kCATransition)
+
+        self.navigationController?.pushViewController(navigationPoint!, animated: true)
     }
 }

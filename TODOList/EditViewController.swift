@@ -61,10 +61,16 @@ class EditViewController: UIViewController, UITextFieldDelegate {
     let formatter = DateFormatter()
     //link to tableView t perform removing cell
     var tableViewController: TableViewController?
-    //cell to get data
-    var cell: TableViewCell?
     //path to cell to perform removing cell
     var indexPath = IndexPath()
+    
+    // replace navigation button with custome one to before alert tranzition
+    override func viewWillAppear(_ animated: Bool) {
+        //hide back button to create custome one, that can delete cell if data was not provided
+        self.navigationItem.hidesBackButton = true
+        let newBackButton = UIBarButtonItem(title: "Back", style: UIBarButtonItem.Style.plain, target: self, action: #selector(EditViewController.back(sender:)))
+        self.navigationItem.rightBarButtonItem = newBackButton
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -77,11 +83,6 @@ class EditViewController: UIViewController, UITextFieldDelegate {
         }
         
         formatter.dateFormat = "HH:mm EEEE, d MMMM y"
-        
-        //hide back button to create custome one, that can delete cell if data was not provided
-        self.navigationItem.hidesBackButton = true
-        let newBackButton = UIBarButtonItem(title: "Back", style: UIBarButtonItem.Style.plain, target: self, action: #selector(EditViewController.back(sender:)))
-        self.navigationItem.leftBarButtonItem = newBackButton
     }
     
     // update data from cell if screen was only hidden
@@ -93,6 +94,7 @@ class EditViewController: UIViewController, UITextFieldDelegate {
             dateSwitch.setOn(true, animated: true)
             taskDate.setDate((tableViewController?.dates[indexPath.row])!, animated: false)
         }
+        
     }
     
     //set date switch to ON
@@ -112,12 +114,13 @@ class EditViewController: UIViewController, UITextFieldDelegate {
     
     //save input to cell and go back to previous screen
     func saveData() {
+        let cell = tableViewController?.tableView.cellForRow(at: indexPath) as? TableViewCell
         cell?.title.text = taskTitle.text
         tableViewController?.titles[indexPath.row] = taskTitle.text ?? ""
         tableViewController?.notes[indexPath.row] = taskNotes.text
         
         //change cell colour depending on deadline time
-        cell?.taskSwitch.setOn(false, animated: false)
+//        cell?.taskSwitch.setOn(false, animated: false)
         tableViewController?.isDone[indexPath.row] = false
         
         tableViewController?.dates[indexPath.row] = taskDate.date
@@ -141,11 +144,15 @@ class EditViewController: UIViewController, UITextFieldDelegate {
             cell?.date.textColor = UIColor.label
             
         }
-        checkIfHasSomething()
+        
+        if checkIfHasSomething() {
+            tableViewController?.saveToPersistentList()
+        }
+        navigeteFromRight()
     }
     
     //provide dialog to cancel changes
-    @IBAction func cancelDialogTrigger(_ sender: UIButton) {
+    @IBAction func cancelDialogTrigger(_ sender: UIButton?) {
         let alert = UIAlertController(title: "Cancel changes?", message: nil, preferredStyle: .alert)
 
         alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {action in self.cancel()}))
@@ -156,11 +163,12 @@ class EditViewController: UIViewController, UITextFieldDelegate {
     
     //press cancel button
     func cancel() {
-        checkIfHasSomething()
+        _ = checkIfHasSomething()
+        navigeteFromRight()
     }
     //press back button
     @objc func back(sender: UIBarButtonItem) {
-        checkIfHasSomething()
+        self.cancelDialogTrigger(nil)
     }
     
     //provide dialog to delete cell
@@ -173,6 +181,7 @@ class EditViewController: UIViewController, UITextFieldDelegate {
     
     //press delete button
      func del() {
+        let cell = tableViewController?.tableView.cellForRow(at: indexPath) as? TableViewCell
         //set cell data to default, so next time you create cell it has default data
         cell?.date.text = ""
         cell?.title.text = ""
@@ -180,13 +189,9 @@ class EditViewController: UIViewController, UITextFieldDelegate {
         cell?.title.textColor = UIColor.label
         
         //delete cell
-        tableViewController?.tableView.beginUpdates()
-        tableViewController?.tableView.deleteRows(at: [indexPath], with: .none)
-        tableViewController?.deleteItem(index: indexPath.row)
-        tableViewController?.tableView.endUpdates()
-        tableViewController?.saveToPersistentList()
+        tableViewController?.del(indexPath, false)
         
-        _ = navigationController?.popViewController(animated: true)
+        navigeteFromRight()
     }
     
     //hide keyboard when press ouside any editable view
@@ -195,23 +200,32 @@ class EditViewController: UIViewController, UITextFieldDelegate {
     }
     
     //delete cell if no data was provided
-    func checkIfHasSomething(){
+    func checkIfHasSomething() -> Bool{
         if (tableViewController?.titles[indexPath.row] == "" &&
             tableViewController?.notes[indexPath.row] == "" &&
             tableViewController?.hasDate[indexPath.row] == false){
             
-             tableViewController?.tableView.beginUpdates()
-             tableViewController?.deleteItem(index: indexPath.row)
-             tableViewController?.tableView.deleteRows(at: [indexPath], with: .none)
-             tableViewController?.tableView.endUpdates()
+            tableViewController?.del(indexPath, false)
+            return false
         }
-        tableViewController?.saveToPersistentList()
-        _ = navigationController?.popViewController(animated: true)
+        return true
     }
     
     // hide keyboard when press return button when firstresponder is edit title field
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         view.endEditing(true)
+    }
+    
+    //custom navigation animation from right to left
+    func navigeteFromRight(){
+        let transition:CATransition = CATransition()
+        transition.duration = 0.35
+        transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
+        transition.type = CATransitionType.push
+        transition.subtype = CATransitionSubtype.fromRight
+        self.navigationController?.view.layer.add(transition, forKey: kCATransition)
+
+        self.navigationController?.popViewController(animated: true)
     }
     
 }
