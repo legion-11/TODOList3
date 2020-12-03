@@ -70,10 +70,7 @@ class EditViewController: UIViewController, UITextFieldDelegate {
         self.navigationItem.hidesBackButton = true
         let newBackButton = UIBarButtonItem(title: "Back", style: UIBarButtonItem.Style.plain, target: self, action: #selector(EditViewController.back(sender:)))
         self.navigationItem.rightBarButtonItem = newBackButton
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
+        
         //show data from cell
         taskTitle.text = tableViewController?.titles[indexPath.row]
         taskNotes.text = tableViewController?.notes[indexPath.row]
@@ -81,6 +78,10 @@ class EditViewController: UIViewController, UITextFieldDelegate {
             dateSwitch.setOn(true, animated: true)
             taskDate.setDate((tableViewController?.dates[indexPath.row])!, animated: false)
         }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
         
         formatter.dateFormat = "HH:mm EEEE, d MMMM y"
     }
